@@ -1,5 +1,6 @@
 use teloxide::prelude::*;
 use tracing::{error, info};
+use std::time::Duration;
 
 mod bot;
 mod config;
@@ -25,7 +26,12 @@ async fn main() {
         }
     };
 
-    let bot = Bot::new(config.telegram_bot_token);
+    let client = reqwest::Client::builder()
+        .timeout(Duration::from_secs(300))
+        .build()
+        .expect("Failed to create HTTP client");
+
+    let bot = Bot::with_client(config.telegram_bot_token, client);
 
     info!("Starting TikTok to Telegram bot...");
 
