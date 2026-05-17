@@ -1,5 +1,5 @@
 use teloxide::prelude::*;
-use teloxide::types::{InlineQueryResult, InlineQueryResultArticle, InputMessageContent, InputMessageContentText};
+use teloxide::types::{InlineQueryResult, InlineQueryResultArticle, InputMessageContent, InputMessageContentText, InlineKeyboardMarkup, InlineKeyboardButton};
 use tracing::{error, info};
 use std::time::Duration;
 
@@ -77,13 +77,17 @@ async fn inline_handler(bot: Bot, query: InlineQuery, bot_username: &str) -> Res
         let start_url = format!("https://t.me/{}?start={}", bot_username, encoded_url);
         let parsed_url = reqwest::Url::parse(&start_url).unwrap();
 
+        let keyboard = InlineKeyboardMarkup::new(vec![vec![
+            InlineKeyboardButton::url("▶️ Скачать видео".to_string(), parsed_url),
+        ]]);
+
         let result = InlineQueryResultArticle::new(
             "download",
             "Скачать TikTok видео",
-            InputMessageContent::Text(InputMessageContentText::new("Нажми кнопку ниже, чтобы скачать видео")),
+            InputMessageContent::Text(InputMessageContentText::new("Нажми кнопку ниже, чтобы скачать видео без водяного знака")),
         )
-        .url(parsed_url)
-        .description("Нажми, чтобы открыть бота и скачать видео");
+        .description("Нажми кнопку для скачивания")
+        .reply_markup(keyboard);
 
         bot.answer_inline_query(query.id, vec![InlineQueryResult::Article(result)])
             .await?;
