@@ -1,4 +1,5 @@
 use teloxide::prelude::*;
+use teloxide::types::{InlineQueryResult, InlineQueryResultArticle, InputMessageContent, InputMessageContentText};
 use tracing::{error, info};
 use std::time::Duration;
 
@@ -31,7 +32,8 @@ async fn main() {
         .build()
         .expect("Failed to create HTTP client");
 
-    let bot = Bot::with_client(config.telegram_bot_token, client);
+    let bot = Bot::with_client(config.telegram_bot_token.clone(), client);
+    let bot_username = config.bot_username.clone();
 
     info!("Starting TikTok to Telegram bot...");
 
@@ -46,6 +48,15 @@ async fn main() {
                 .endpoint(|bot: Bot, msg: Message| async move {
                     message_handler(bot, msg).await
                 }),
+        )
+        .branch(
+            Update::filter_inline_query()
+                .endpoint(move |bot: Bot, query: InlineQuery| {
+                    let bot_username = bot_username.clone();
+                    async move {
+                        inline_handler(bot, query, &bot_username).await
+                    }
+                }),
         );
 
     Dispatcher::builder(bot, handler)
@@ -55,4 +66,48 @@ async fn main() {
         .await;
 
     info!("Bot stopped");
+}
+
+async fn inline_handler(bot: Bot, query: InlineQuery, bot_username: &str) -> ResponseResult<()> {
+    if let Some(url) = utils::extract_tiktok_url(&query.query) {
+        let encoded_url = url
+            .replace("https://", "")
+            .replace("http://", "")
+            .replace("/", "_");
+        let start_url = format!("https://t.me/{}?start={}", bot_username, encoded_url);
+        let parsed_url = reqwest::Url::parse(&start_url).unwrap();
+
+        let result = InlineQueryResultArticle::new(
+            "download",
+            "Скачать TikTok видео",
+            InputMessageContent::Text(InputMessageContentText::new("Нажми кнопку ниже, чтобы скачать видео")),
+        )
+        .url(parsed_url)
+        .description("Нажми, чтобы открыть бота и скачать видео");
+
+        bot.answer_inline_query(query.id, vec![InlineQueryResult::Article(result)])
+            .await?;
+    } else if !query.query.is_empty() {
+        let result = InlineQueryResultArticle::new(
+            "no_url",
+            "Не нашёл TikTok ссылку",
+            InputMessageContent::Text(InputMessageContentText::new("Введи ссылку на TikTok видео после упоминания бота")),
+        )
+        .description("Попробуй ввести ссылку на TikTok");
+
+        bot.answer_inline_query(query.id, vec![InlineQueryResult::Article(result)])
+            .await?;
+    } else {
+        let result = InlineQueryResultArticle::new(
+            "help",
+            "Скачать TikTok видео",
+            InputMessageContent::Text(InputMessageContentText::new("Введи ссылку на TikTok видео после упоминания бота, например: @bot https://vt.tiktok.com/...")),
+        )
+        .description("Нажми и введи ссылку на TikTok");
+
+        bot.answer_inline_query(query.id, vec![InlineQueryResult::Article(result)])
+            .await?;
+    }
+
+    Ok(())
 }

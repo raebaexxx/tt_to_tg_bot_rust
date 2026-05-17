@@ -6,7 +6,8 @@ Telegram bot for downloading TikTok videos without watermark, written in Rust.
 
 - Download TikTok videos without watermark
 - Send videos directly to Telegram chat
-- Simple and fast
+- Inline mode — download videos from any chat
+- iOS compatible video format
 - Long Polling mode
 
 ## Requirements
@@ -41,9 +42,10 @@ sudo dnf install yt-dlp ffmpeg
 cp .env.example .env
 ```
 
-4. Edit `.env` and add your Telegram bot token:
+4. Edit `.env` and add your Telegram bot token and username:
 ```
 TELEGRAM_BOT_TOKEN=your_bot_token_here
+BOT_USERNAME=your_bot_username
 ```
 
 5. Build and run:
@@ -53,21 +55,28 @@ cargo run --release
 
 ## Usage
 
-1. Start a chat with your bot in Telegram
+### Direct mode
+1. Open chat with your bot
 2. Send `/start` to get a welcome message
 3. Send a TikTok video link
 4. Wait for the bot to download and send the video
 
+### Inline mode
+1. In any chat, type `@your_bot_username https://vt.tiktok.com/...`
+2. Click the result button
+3. Bot opens in chat and automatically downloads the video
+
 ## Commands
 
-- `/start` - Start the bot
-- `/help` - Show available commands
+- `/start` — Start the bot
+- `/help` — Show available commands
 
 ## Configuration
 
 | Variable | Description | Required |
 |----------|-------------|----------|
 | `TELEGRAM_BOT_TOKEN` | Telegram bot token from @BotFather | Yes |
+| `BOT_USERNAME` | Bot username (e.g. `my_tiktok_bot`) | Yes (for inline mode) |
 
 ## License
 
