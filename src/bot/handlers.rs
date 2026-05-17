@@ -1,0 +1,90 @@
+use teloxide::prelude::*;
+use teloxide::utils::command::BotCommands;
+use teloxide::types::InputFile;
+use tracing::{error, info};
+
+use crate::tiktok::downloader;
+use crate::utils;
+
+#[derive(BotCommands, Clone)]
+#[command(rename_rule = "lowercase", description = "Available commands:")]
+pub enum Command {
+    Start,
+    Help,
+}
+
+pub async fn command_handler(bot: Bot, msg: Message, cmd: Command) -> ResponseResult<()> {
+    match cmd {
+        Command::Start => {
+            bot.send_message(
+                msg.chat.id,
+                "👋 Привет! Отправь мне ссылку на TikTok видео, и я скачаю его без водяного знака.",
+            )
+            .await?;
+        }
+        Command::Help => {
+            bot.send_message(
+                msg.chat.id,
+                Command::descriptions().to_string(),
+            )
+            .await?;
+        }
+    }
+    Ok(())
+}
+
+pub async fn message_handler(bot: Bot, msg: Message) -> ResponseResult<()> {
+    if let Some(text) = &msg.text() {
+        if let Some(url) = utils::extract_tiktok_url(text) {
+            info!("Processing TikTok URL: {}", url);
+
+            let processing_msg = bot
+                .send_message(msg.chat.id, "⏳ Скачиваю видео...")
+                .await?;
+
+            match downloader::download_video(&url).await {
+                Ok(video_path) => {
+                    let file_size = std::fs::metadata(&video_path)
+                        .map(|m| m.len())
+                        .unwrap_or(0);
+
+                    if file_size > 50_000_000 {
+                        bot.send_message(
+                            msg.chat.id,
+                            "❌ Видео слишком большое (лимит 50MB).",
+                        )
+                        .await?;
+                    } else {
+                        bot.send_video(msg.chat.id, InputFile::file(&video_path))
+                            .await
+                            .map_err(|e| {
+                                error!("Failed to send video: {}", e);
+                                e
+                            })?;
+                    }
+
+                    utils::cleanup_file(&video_path);
+                }
+                Err(e) => {
+                    error!("Download failed: {}", e);
+                    bot.send_message(
+                        msg.chat.id,
+                        format!("❌ Ошибка при скачивании: {}", e),
+                    )
+                    .await?;
+                }
+            }
+
+            bot.delete_message(msg.chat.id, processing_msg.id)
+                .await
+                .ok();
+        } else {
+            bot.send_message(
+                msg.chat.id,
+                "❌ Не нашёл ссылку на TikTok. Отправь мне ссылку на видео.",
+            )
+            .await?;
+        }
+    }
+    Ok(())
+}

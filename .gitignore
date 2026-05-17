@@ -1,0 +1,4 @@
+/target
+.env
+*.mp4
+*.tmp
