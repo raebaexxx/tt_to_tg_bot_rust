@@ -23,12 +23,11 @@ pub async fn download_video(url: &str) -> Result<PathBuf, String> {
 
     let output = Command::new("yt-dlp")
         .args([
-            "--no-watermark",
             "-o",
-            &output_path,
+            &format!("{}.mp4", output_path),
             "--no-playlist",
-            "--format",
-            "mp4",
+            "--extractor-args",
+            "tiktok:format=play",
             url,
         ])
         .output()
@@ -42,5 +41,5 @@ pub async fn download_video(url: &str) -> Result<PathBuf, String> {
 
     info!("Video downloaded successfully");
 
-    Ok(PathBuf::from(output_path))
+    Ok(PathBuf::from(format!("{}.mp4", output_path)))
 }
