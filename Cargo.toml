@@ -14,3 +14,9 @@ tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 dotenvy = "0.15"
 regex = "1"
+
+[profile.release]
+opt-level = 1
+codegen-units = 1
+lto = false
+strip = true
