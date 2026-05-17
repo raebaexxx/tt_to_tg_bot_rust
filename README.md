@@ -13,6 +13,7 @@ Telegram bot for downloading TikTok videos without watermark, written in Rust.
 
 - Rust 1.75+
 - [yt-dlp](https://github.com/yt-dlp/yt-dlp) installed on your system
+- [ffmpeg](https://ffmpeg.org/) installed on your system
 - Telegram Bot Token
 
 ## Installation
@@ -23,13 +24,16 @@ git clone https://github.com/raebaexxx/tt_to_tg_bot_rust.git
 cd tt_to_tg_bot_rust
 ```
 
-2. Install yt-dlp:
+2. Install yt-dlp and ffmpeg:
 ```bash
-# Linux
-pip install yt-dlp
+# Ubuntu/Debian
+sudo apt install yt-dlp ffmpeg
 
-# Or using your package manager
-sudo apt install yt-dlp
+# macOS
+brew install yt-dlp ffmpeg
+
+# CentOS/Fedora
+sudo dnf install yt-dlp ffmpeg
 ```
 
 3. Create `.env` file:

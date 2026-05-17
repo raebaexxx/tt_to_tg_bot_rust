@@ -42,7 +42,13 @@ pub async fn message_handler(bot: Bot, msg: Message) -> ResponseResult<()> {
                 .send_message(msg.chat.id, "⏳ Скачиваю видео...")
                 .await?;
 
-            match downloader::download_video(&url).await {
+            let result = downloader::download_video(&url).await;
+
+            bot.delete_message(msg.chat.id, processing_msg.id)
+                .await
+                .ok();
+
+            match result {
                 Ok(video_path) => {
                     let file_size = std::fs::metadata(&video_path)
                         .map(|m| m.len())
@@ -55,12 +61,27 @@ pub async fn message_handler(bot: Bot, msg: Message) -> ResponseResult<()> {
                         )
                         .await?;
                     } else {
-                        bot.send_video(msg.chat.id, InputFile::file(&video_path))
-                            .await
-                            .map_err(|e| {
+                        let sending_msg = bot
+                            .send_message(msg.chat.id, "📤 Отправляю видео...")
+                            .await?;
+
+                        match bot.send_video(msg.chat.id, InputFile::file(&video_path)).await {
+                            Ok(_) => {
+                                bot.delete_message(msg.chat.id, sending_msg.id)
+                                    .await
+                                    .ok();
+                            }
+                            Err(e) => {
                                 error!("Failed to send video: {}", e);
-                                e
-                            })?;
+                                bot.edit_message_text(
+                                    msg.chat.id,
+                                    sending_msg.id,
+                                    "❌ Ошибка при отправке видео. Попробуйте позже.",
+                                )
+                                .await
+                                .ok();
+                            }
+                        }
                     }
 
                     utils::cleanup_file(&video_path);
@@ -74,10 +95,6 @@ pub async fn message_handler(bot: Bot, msg: Message) -> ResponseResult<()> {
                     .await?;
                 }
             }
-
-            bot.delete_message(msg.chat.id, processing_msg.id)
-                .await
-                .ok();
         } else {
             bot.send_message(
                 msg.chat.id,
