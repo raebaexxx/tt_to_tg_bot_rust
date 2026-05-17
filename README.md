@@ -78,6 +78,33 @@ cargo run --release
 | `TELEGRAM_BOT_TOKEN` | Telegram bot token from @BotFather | Yes |
 | `BOT_USERNAME` | Bot username (e.g. `my_tiktok_bot`) | Yes (for inline mode) |
 
+## Running in Background
+
+To keep the bot running after disconnecting from SSH:
+
+### Option 1: nohup (simplest)
+```bash
+nohup cargo run --release > bot.log 2>&1 &
+```
+- View logs: `tail -f bot.log`
+- Stop bot: `pkill tt_to_tg_bot`
+
+### Option 2: screen
+```bash
+screen -S bot
+cargo run --release
+# Press Ctrl+A, then D to detach
+```
+- Reattach: `screen -r bot`
+
+### Option 3: tmux
+```bash
+tmux new -s bot
+cargo run --release
+# Press Ctrl+B, then D to detach
+```
+- Reattach: `tmux attach -t bot`
+
 ## License
 
 MIT
