@@ -65,7 +65,15 @@ pub async fn message_handler(bot: Bot, msg: Message) -> ResponseResult<()> {
                             .send_message(msg.chat.id, "📤 Отправляю видео...")
                             .await?;
 
-                        match bot.send_video(msg.chat.id, InputFile::file(&video_path)).await {
+                        let video_info = utils::get_video_dimensions(&video_path);
+
+                        let mut req = bot.send_video(msg.chat.id, InputFile::file(&video_path));
+
+                        if let Some((w, h)) = video_info {
+                            req = req.width(w).height(h);
+                        }
+
+                        match req.await {
                             Ok(_) => {
                                 bot.delete_message(msg.chat.id, sending_msg.id)
                                     .await

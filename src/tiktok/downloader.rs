@@ -57,6 +57,8 @@ pub async fn download_video(url: &str) -> Result<PathBuf, String> {
             "fast",
             "-c:a",
             "aac",
+            "-vf",
+            "scale=trunc(iw/2)*2:trunc(ih/2)*2",
             "-movflags",
             "+faststart",
             "-y",
