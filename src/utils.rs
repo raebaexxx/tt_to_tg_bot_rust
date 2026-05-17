@@ -4,7 +4,7 @@ use tracing::info;
 
 pub fn is_tiktok_url(text: &str) -> bool {
     let pattern = Regex::new(
-        r"(https?://)?(www\.|vm\.)?tiktok\.com/[@\w]+",
+        r"(https?://)?(www\.|vm\.|vt\.|m\.)?tiktok\.com/[@\w]+",
     )
     .unwrap();
     pattern.is_match(text)
@@ -12,7 +12,7 @@ pub fn is_tiktok_url(text: &str) -> bool {
 
 pub fn extract_tiktok_url(text: &str) -> Option<String> {
     let pattern = Regex::new(
-        r"https?://(?:www\.|vm\.)?tiktok\.com/[^\s]+",
+        r"https?://(?:www\.|vm\.|vt\.|m\.)?tiktok\.com/[^\s]+",
     )
     .unwrap();
     pattern.find(text).map(|m| m.as_str().to_string())
