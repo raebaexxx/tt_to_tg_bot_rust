@@ -1,29 +1,30 @@
 use regex::Regex;
 use std::path::Path;
 use std::process::Command;
+use std::sync::LazyLock;
 use tracing::info;
 
+static TIKTOK_RE_IS_MATCH: LazyLock<Regex> = LazyLock::new(|| {
+    Regex::new(r"(https?://)?(www\.|vm\.|vt\.|m\.)?tiktok\.com/[@\w]+").unwrap()
+});
+
+static TIKTOK_RE_EXTRACT: LazyLock<Regex> = LazyLock::new(|| {
+    Regex::new(r"https?://(?:www\.|vm\.|vt\.|m\.)?tiktok\.com/[^\s]+").unwrap()
+});
+
 pub fn is_tiktok_url(text: &str) -> bool {
-    let pattern = Regex::new(
-        r"(https?://)?(www\.|vm\.|vt\.|m\.)?tiktok\.com/[@\w]+",
-    )
-    .unwrap();
-    pattern.is_match(text)
+    TIKTOK_RE_IS_MATCH.is_match(text)
 }
 
 pub fn extract_tiktok_url(text: &str) -> Option<String> {
-    let pattern = Regex::new(
-        r"https?://(?:www\.|vm\.|vt\.|m\.)?tiktok\.com/[^\s]+",
-    )
-    .unwrap();
-    pattern.find(text).map(|m| m.as_str().to_string())
+    TIKTOK_RE_EXTRACT
+        .find(text)
+        .map(|m| m.as_str().to_string())
 }
 
 pub fn cleanup_file(path: &Path) {
-    if path.exists() {
-        if let Err(e) = std::fs::remove_file(path) {
-            info!("Failed to remove temp file: {}", e);
-        }
+    if path.exists() && let Err(e) = std::fs::remove_file(path) {
+        info!("Failed to remove temp file: {}", e);
     }
 }
 

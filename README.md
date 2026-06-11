@@ -10,14 +10,32 @@ Telegram bot for downloading TikTok videos without watermark, written in Rust.
 - iOS compatible video format
 - Long Polling mode
 
+## Quick Start (pre-built binary)
+
+Download the latest binary from [Releases](https://github.com/raebaexxx/tt_to_tg_bot_rust/releases):
+
+```bash
+# Download
+curl -L -o tt_to_tg_bot.tar.gz \
+  https://github.com/raebaexxx/tt_to_tg_bot_rust/releases/latest/download/tt_to_tg_bot-v0.1.0-x86_64-unknown-linux-musl.tar.gz
+
+# Extract
+tar xzf tt_to_tg_bot.tar.gz
+
+# Create config
+echo "TELEGRAM_BOT_TOKEN=your_token_here" > .env
+
+# Run
+./tt_to_tg_bot
+```
+
 ## Requirements
 
-- Rust 1.75+
 - [yt-dlp](https://github.com/yt-dlp/yt-dlp) installed on your system
 - [ffmpeg](https://ffmpeg.org/) installed on your system
 - Telegram Bot Token
 
-## Installation
+## Installation (from source)
 
 1. Clone the repository:
 ```bash
@@ -42,10 +60,9 @@ sudo dnf install yt-dlp ffmpeg
 cp .env.example .env
 ```
 
-4. Edit `.env` and add your Telegram bot token and username:
+4. Edit `.env` and add your Telegram bot token:
 ```
 TELEGRAM_BOT_TOKEN=your_bot_token_here
-BOT_USERNAME=your_bot_username
 ```
 
 5. Build and run:
@@ -76,15 +93,12 @@ cargo run --release
 | Variable | Description | Required |
 |----------|-------------|----------|
 | `TELEGRAM_BOT_TOKEN` | Telegram bot token from @BotFather | Yes |
-| `BOT_USERNAME` | Bot username (e.g. `my_tiktok_bot`) | Yes (for inline mode) |
 
 ## Running in Background
 
-To keep the bot running after disconnecting from SSH:
-
 ### Option 1: nohup (simplest)
 ```bash
-nohup cargo run --release > bot.log 2>&1 &
+nohup ./tt_to_tg_bot > bot.log 2>&1 &
 ```
 - View logs: `tail -f bot.log`
 - Stop bot: `pkill tt_to_tg_bot`
@@ -92,7 +106,7 @@ nohup cargo run --release > bot.log 2>&1 &
 ### Option 2: screen
 ```bash
 screen -S bot
-cargo run --release
+./tt_to_tg_bot
 # Press Ctrl+A, then D to detach
 ```
 - Reattach: `screen -r bot`
@@ -100,10 +114,34 @@ cargo run --release
 ### Option 3: tmux
 ```bash
 tmux new -s bot
-cargo run --release
+./tt_to_tg_bot
 # Press Ctrl+B, then D to detach
 ```
 - Reattach: `tmux attach -t bot`
+
+### Option 4: systemd service
+```bash
+sudo tee /etc/systemd/system/tt_to_tg_bot.service << 'EOF'
+[Unit]
+Description=TikTok to Telegram Bot
+After=network.target
+
+[Service]
+Type=simple
+User=your_user
+WorkingDirectory=/path/to/bot
+ExecStart=/path/to/bot/tt_to_tg_bot
+Restart=always
+RestartSec=5
+Environment=TELEGRAM_BOT_TOKEN=your_token_here
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+sudo systemctl daemon-reload
+sudo systemctl enable --now tt_to_tg_bot
+```
 
 ## License
 

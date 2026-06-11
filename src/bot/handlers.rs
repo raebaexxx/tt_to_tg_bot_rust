@@ -77,7 +77,7 @@ async fn process_video(bot: Bot, msg: Message, url: &str) -> ResponseResult<()> 
         .send_message(msg.chat.id, "⏳ Скачиваю видео...")
         .await?;
 
-    let result = downloader::download_video(&url).await;
+    let result = downloader::download_video(url).await;
 
     bot.delete_message(msg.chat.id, processing_msg.id)
         .await

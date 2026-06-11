@@ -58,7 +58,7 @@ async fn main() {
                 .endpoint(move |bot: Bot, query: InlineQuery| {
                     let cache = file_id_cache.clone();
                     async move {
-                        inline_handler(bot, query, "", cache).await
+                        inline_handler(bot, query, cache).await
                     }
                 }),
         );
@@ -75,7 +75,6 @@ async fn main() {
 async fn inline_handler(
     bot: Bot,
     query: InlineQuery,
-    _bot_username: &str,
     cache: FileIdCache,
 ) -> ResponseResult<()> {
     if let Some(url) = utils::extract_tiktok_url(&query.query) {
@@ -168,7 +167,7 @@ async fn inline_handler(
                 let result = InlineQueryResultArticle::new(
                     "download_error",
                     "Ошибка скачивания",
-                    InputMessageContent::Text(InputMessageContentText::new(&format!("❌ Ошибка: {}", e))),
+                    InputMessageContent::Text(InputMessageContentText::new(format!("❌ Ошибка: {}", e))),
                 );
                 bot.answer_inline_query(query.id, vec![InlineQueryResult::Article(result)])
                     .await?;
