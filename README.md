@@ -1,5 +1,8 @@
 # TikTok to Telegram Bot
 
+[![CI](https://github.com/raebaexxx/tt_to_tg_bot_rust/actions/workflows/ci.yml/badge.svg)](https://github.com/raebaexxx/tt_to_tg_bot_rust/actions/workflows/ci.yml)
+[![Build & Release](https://github.com/raebaexxx/tt_to_tg_bot_rust/actions/workflows/release.yml/badge.svg)](https://github.com/raebaexxx/tt_to_tg_bot_rust/actions/workflows/release.yml)
+
 Telegram bot for downloading TikTok videos without watermark, written in Rust.
 
 ## Features
@@ -12,21 +15,20 @@ Telegram bot for downloading TikTok videos without watermark, written in Rust.
 
 ## Quick Start (pre-built binary)
 
-Download the latest binary from [Releases](https://github.com/raebaexxx/tt_to_tg_bot_rust/releases):
+Download the latest binary from [Releases](https://github.com/raebaexxx/tt_to_tg_bot_rust/releases/tag/latest):
 
 ```bash
 # Download
-curl -L -o tt_to_tg_bot.tar.gz \
-  https://github.com/raebaexxx/tt_to_tg_bot_rust/releases/latest/download/tt_to_tg_bot-v0.1.0-x86_64-unknown-linux-musl.tar.gz
+curl -L -o tt_to_tg_bot-x86_64-linux-musl \
+  https://github.com/raebaexxx/tt_to_tg_bot_rust/releases/latest/download/tt_to_tg_bot-x86_64-linux-musl
 
-# Extract
-tar xzf tt_to_tg_bot.tar.gz
+chmod +x tt_to_tg_bot-x86_64-linux-musl
 
 # Create config
 echo "TELEGRAM_BOT_TOKEN=your_token_here" > .env
 
 # Run
-./tt_to_tg_bot
+./tt_to_tg_bot-x86_64-linux-musl
 ```
 
 ## Requirements
@@ -98,15 +100,15 @@ cargo run --release
 
 ### Option 1: nohup (simplest)
 ```bash
-nohup ./tt_to_tg_bot > bot.log 2>&1 &
+nohup ./tt_to_tg_bot-x86_64-linux-musl > bot.log 2>&1 &
 ```
 - View logs: `tail -f bot.log`
-- Stop bot: `pkill tt_to_tg_bot`
+- Stop bot: `pkill tt_to_tg_bot-x86_64-linux-musl`
 
 ### Option 2: screen
 ```bash
 screen -S bot
-./tt_to_tg_bot
+./tt_to_tg_bot-x86_64-linux-musl
 # Press Ctrl+A, then D to detach
 ```
 - Reattach: `screen -r bot`
@@ -114,7 +116,7 @@ screen -S bot
 ### Option 3: tmux
 ```bash
 tmux new -s bot
-./tt_to_tg_bot
+./tt_to_tg_bot-x86_64-linux-musl
 # Press Ctrl+B, then D to detach
 ```
 - Reattach: `tmux attach -t bot`
@@ -130,10 +132,10 @@ After=network.target
 Type=simple
 User=your_user
 WorkingDirectory=/path/to/bot
-ExecStart=/path/to/bot/tt_to_tg_bot
+ExecStart=/path/to/bot/tt_to_tg_bot-x86_64-linux-musl
 Restart=always
 RestartSec=5
-Environment=TELEGRAM_BOT_TOKEN=your_token_here
+EnvironmentFile=/path/to/bot/.env
 
 [Install]
 WantedBy=multi-user.target
