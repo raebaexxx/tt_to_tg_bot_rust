@@ -29,12 +29,10 @@ jobs:
       - name: Build
         run: cargo build --profile dist --target x86_64-unknown-linux-musl
 
-      - name: Create archive
+      - name: Prepare binary
         run: |
-          ARCHIVE="tt_to_tg_bot-${{ github.sha }}-x86_64-unknown-linux-musl.tar.gz"
-          tar czf "$ARCHIVE" \
-            -C target/x86_64-unknown-linux-musl/dist tt_to_tg_bot
-          sha256sum "$ARCHIVE" > "$ARCHIVE.sha256"
+          cp target/x86_64-unknown-linux-musl/dist/tt_to_tg_bot tt_to_tg_bot-x86_64-linux-musl
+          sha256sum tt_to_tg_bot-x86_64-linux-musl > tt_to_tg_bot-x86_64-linux-musl.sha256
 
       - name: Upload to continuous release
         uses: ncipollo/release-action@v1
@@ -46,14 +44,14 @@ jobs:
 
             ## Установка на сервере
             ```bash
-            tar xzf tt_to_tg_bot-*.tar.gz
+            chmod +x tt_to_tg_bot-x86_64-linux-musl
             echo "TELEGRAM_BOT_TOKEN=ваш_токен" > .env
             sudo apt install -y ffmpeg yt-dlp
-            ./tt_to_tg_bot
+            ./tt_to_tg_bot-x86_64-linux-musl
             ```
           allowUpdates: true
           replacesArtifacts: true
-          artifacts: tt_to_tg_bot-*.tar.gz*
+          artifacts: tt_to_tg_bot-x86_64-linux-musl*
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload versioned release (on tags)
@@ -64,5 +62,5 @@ jobs:
           name: ${{ github.ref_name }}
           allowUpdates: true
           replacesArtifacts: true
-          artifacts: tt_to_tg_bot-*.tar.gz*
+          artifacts: tt_to_tg_bot-x86_64-linux-musl*
           token: ${{ secrets.GITHUB_TOKEN }}
